@@ -7,6 +7,7 @@ Caso de uso
 Agente conversacional para una tienda online de conjuntos deportivos y urbanos para mujeres, que atiende consultas de soporte de clientes (productos, pedidos, envíos, cambios, pagos y reclamos), las clasifica por categoría y prioridad, y registra los casos que necesitan intervención humana.
 
 Arquitectura del flujo
+
 [Chat Trigger] → [AI Agent] → [Gmail: Log de observabilidad]
                      │
           ┌──────────┼──────────┐
