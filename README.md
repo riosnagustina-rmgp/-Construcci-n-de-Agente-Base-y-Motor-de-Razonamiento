@@ -12,6 +12,8 @@ Arquitectura del flujo
           ┌──────────┼──────────┐
           │                     │
    [OpenAI Chat Model]   [Google Sheets: registrar caso]
+
+   
 Componentes
 Trigger: Chat Trigger, captura el mensaje inicial del cliente.
 AI Agent: modo Tools Agent, con límite de 6 iteraciones máximas como guardrail de seguridad.
