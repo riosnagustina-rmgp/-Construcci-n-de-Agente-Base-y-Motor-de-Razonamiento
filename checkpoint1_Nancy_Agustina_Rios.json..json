@@ -1,0 +1,269 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        16,
+        0
+      ],
+      "id": "1e1ffcde-31f0-44ed-8fd7-6856b2fd4145",
+      "name": "When chat message received",
+      "webhookId": "61f28ee9-635d-42f2-b215-b69233333463"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "# ROL\nSos el Asistente de Triaje de Soporte de SUKI, una tienda online de INDUMENTARIA FEMENINA.\n\n# ÁMBITO\n- Atendés consultas de clientes que llegan por chat: información de productos, pedidos, envíos, cambios, devoluciones, pagos y reclamos.\n- Solo hablás de temas relacionados con la tienda y sus compras.\n- Si la consulta es ajena a la tienda, indicá amablemente que no podés ayudar con eso.\n\n# OBJETIVO\nEn cada conversación tenés que:\n1. Entender qué necesita el cliente.\n2. Clasificar la consulta en una de estas categorías: Producto, Pedido, Envío, Cambio o devolución, Pago, Reclamo u Otro.\n3. Asignar una prioridad: Alta, Media o Baja. Es Alta si hay un reclamo, un producto dañado, un problema de pago o un cliente enojado.\n4. Recopilar como mínimo: nombre, dato de contacto (email o teléfono), número de pedido si corresponde y una descripción breve del caso.\n5. Registrar el caso con la herramienta disponible para que una persona del equipo lo resuelva.\n\n# REGLAS\n- Usá español rioplatense profesional, claro y cordial, con formulaciones neutras.\n- No uses lenguaje inclusivo (nada de \"todes\", \"@\", \"x\" o \"e\" como marca de género).\n- Hacé una sola pregunta por mensaje.\n- No tenés acceso al estado de los pedidos, al stock ni a los precios. Si el cliente pregunta por eso, no inventes datos: explicá que vas a registrar el caso y que una persona del equipo va a responderle.\n- Registrá cada caso una sola vez.\n\n# RESTRICCIONES (lo que NO podés hacer)\n- Confirmar o prometer reembolsos, descuentos, cambios, plazos de entrega o compensaciones.\n- Informar estados de pedido, stock o precios que no conozcas con certeza.\n- Pedir datos de tarjetas, contraseñas o claves.\n- Compartir información de otros clientes o pedidos.\n- Modificar o borrar registros existentes.\n- Dar asesoramiento legal, contable o financiero.\n\n# ESCALAMIENTO\nDerivá a una persona del equipo, con prioridad Alta, si el cliente: reclama por un producto dañado o equivocado, informa un cobro duplicado o un posible fraude, pide un reembolso, muestra enojo, amenaza con una denuncia o plantea un tema legal. En ese caso respondé \"Un integrante del equipo va a contactarte a la brevedad\" y registrá el caso con estado \"Escalar\".",
+          "maxIterations": 6,
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        384,
+        0
+      ],
+      "id": "b4c9a5d0-47cd-4ca7-a5ee-3bb344220bb6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        208
+      ],
+      "id": "86df9bf3-4ffc-4106-af4f-b49073075353",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Rcp41tUPGwOeDzVD",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usá esta herramienta para registrar un caso de soporte de un cliente de la tienda online.\n\nCUÁNDO USARLA: únicamente cuando ya tengas como mínimo el nombre del cliente, un dato de contacto (email o teléfono) y una descripción clara de su consulta o problema. También usala siempre que el caso deba escalarse a una persona del equipo, con estado \"Escalar\".\n\nQUÉ ENVIAR: nombre, contacto, número de pedido (si lo dio), categoría de la consulta, prioridad, descripción breve del caso y estado.\n\nCUÁNDO NO USARLA: si el cliente todavía no dio los datos mínimos, si solo hizo una pregunta general sobre productos que no requiere seguimiento, si el caso ya fue registrado en esta misma conversación, o si el mensaje no tiene relación con la tienda.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XGdP5fgbiyfYIGDd3BAltAEACHLmbEcG5N3Hh_8cMWY",
+          "mode": "list",
+          "cachedResultName": "SOPORTE AI AGENT - SUKI ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XGdP5fgbiyfYIGDd3BAltAEACHLmbEcG5N3Hh_8cMWY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=gid=0",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "FECHA": "={{ $now.toISO() }}",
+            "NOMBRE": "={{ $fromAI('nombre', 'Nombre del cliente', 'string')}}",
+            "CONTACTO": "={{ $fromAI('contacto', 'Email o teléfono del cliente', 'string') }}",
+            "NÚMERO_PEDIDO": "={{ $fromAI('numero_pedido', 'Número de pedido si el cliente lo informó, vacío si no', 'string') }}",
+            "CATEGORIA": "={{ $fromAI('categoria', 'Producto, Pedido, Envío, Cambio o devolución, Pago, Reclamo u Otro', 'string') }}",
+            "PRIORIDAD": "={{ $fromAI('prioridad', 'Alta, Media o Baja', 'string') }}",
+            "DESCRIPCIÓN DEL CASO": "={{ $fromAI('descripcion', 'Resumen breve del caso en una frase', 'string') }}",
+            "ESTADO": "={{ $fromAI('estado', 'Nuevo o Escalar', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FECHA",
+              "displayName": "FECHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CONTACTO",
+              "displayName": "CONTACTO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NÚMERO_PEDIDO",
+              "displayName": "NÚMERO_PEDIDO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CATEGORIA",
+              "displayName": "CATEGORIA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PRIORIDAD",
+              "displayName": "PRIORIDAD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DESCRIPCIÓN DEL CASO",
+              "displayName": "DESCRIPCIÓN DEL CASO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        528,
+        192
+      ],
+      "id": "17ad5b51-dcab-4179-85f0-84d7af8376c0",
+      "name": "Append row in sheet in Google Sheets",
+      "notesInFlow": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Gur0jYwrsEaGTScI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "tu-email@ejemplo.com",
+        "subject": "Agente de soporte",
+        "message": "=Consulta del cliente:\n{{ $('When chat message received').item.json.chatInput }}\n\nRespuesta del agente:\n{{ $json.output }}\n\nPasos intermedios (Execution Log):\n{{ JSON.stringify($json.intermediateSteps, null, 2) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        0
+      ],
+      "id": "824b664e-7dc8-4057-9fcb-d48936ff7939",
+      "name": "Send a message",
+      "webhookId": "7e0809ef-b77a-44f5-b2d2-5d9691727a73",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "esvcI8d1o7ai68Bv",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5773289d-4f6c-48c4-a387-ed061bace40e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e33882c5b314e08aca9a21ea4d7862a8672f17e929fc99e8cd28ff6fc0c273a3"
+  },
+  "nodeGroups": [],
+  "id": "HqcseUQAlTFFNjYg",
+  "tags": []
+}
